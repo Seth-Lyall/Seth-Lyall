@@ -34,21 +34,21 @@ My Command Line Shell is: Windows Powershell
 ### Navigating My OS on the Command Line
 
 1. Full / absolute path to your user's home directory: C:\Users\lyall
-2. Create a directory named `DirA`:
-3. Create a directory named `Dir B`:
-4. Go into `DirA`:
-5. Go into `Dir B` from `DirA`:
-6. Return to your user's home directory:
-7. Create a file named `test.txt`:
-8. Move the file named `test.txt` into `DirA`:
+2. Create a directory named `DirA`: mkdir DirA
+3. Create a directory named `Dir B`: mkdir "Dir B"
+4. Go into `DirA`: cd DirA
+5. Go into `Dir B` from `DirA`: cd .. | cd "Dir B"
+6. Return to your user's home directory: cd ..
+7. Create a file named `test.txt`: New-Item text.txt
+8. Move the file named `test.txt` into `DirA`: mv text.txt DirA
 9. Contents of `test.txt`:
 ```
 This is a test file.
 ```
-10. Make a copy of `test.txt` named `copy.txt` in `DirA`:
-11. View the contents of `DirA`: 
-12. Make a copy of `test.txt` in `Dir B` named `fodder.txt`:
-13. Delete / remove both `fodder.txt` AND `Dir B`:
+10. Make a copy of `test.txt` named `copy.txt` in `DirA`: cd DirA | cp text.txt copy.txt
+11. View the contents of `DirA`: ls
+12. Make a copy of `test.txt` in `Dir B` named `fodder.txt`: cp text.txt fodder.txt | mv fodder.txt "C:\Users\lyall\Dir B"
+13. Delete / remove both `fodder.txt` AND `Dir B`: cd .. | rm "Dir B" | A
 
 ## Citations
 
