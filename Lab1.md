@@ -17,9 +17,9 @@
 | mkdir   | mkdir       |Creates a new directory with a specified name.|
 | Set-Location | cd     |Sets your directory to a specified file or folder in your current directory.|
 | New-Item | touch      |Creates a new file in the current directory.|
-| Move-Item | mv        |Moves a specified item path from the current directory to a specified directory.|
-| Copy-Item | cp        |Copies a specified item from the current directory back into the current directory.|
-| Remove-Item | rm      |Removes a specified item from the current directory.|
+| Move-Item | mv        |Moves a specified item from the current directory to a specified directory.|
+| Copy-Item | cp        |Copies a specified item from the current directory back into the current directory with a new name.|
+| Remove-Item | rm      |Removes a specified item from the current directory along with any items contained within.|
 | notepad.exe | vim     |Opens notepad.exe|
 
 ## Part 3 - Command Line Navigation
@@ -33,7 +33,7 @@ My Command Line Shell is: Windows Powershell
 
 ### Navigating My OS on the Command Line
 
-1. Full / absolute path to your user's home directory:
+1. Full / absolute path to your user's home directory: C:\Users\lyall
 2. Create a directory named `DirA`:
 3. Create a directory named `Dir B`:
 4. Go into `DirA`:
@@ -43,7 +43,7 @@ My Command Line Shell is: Windows Powershell
 8. Move the file named `test.txt` into `DirA`:
 9. Contents of `test.txt`:
 ```
-Put your words here
+This is a test file.
 ```
 10. Make a copy of `test.txt` named `copy.txt` in `DirA`:
 11. View the contents of `DirA`: 
