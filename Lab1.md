@@ -1,11 +1,11 @@
 ## Lab 01
 
-- Name:
-- Email:
+- Name: Seth Lyall
+- Email: lyall.5@wright.edu
 
 ## Part 1 - GitHub Profile
 
-1. [your_github_username_here's GitHub Profile](FIXTHISURL-https://github.com/your_username)
+1. [Seth-Lyall's GitHub Profile](FIXTHISURL-https://github.com/Seth-Lyall)
 
 ## Part 2 - Research
 
