@@ -53,6 +53,3 @@ This is a test file.
 ## Citations
 
 To add citations, provide the site and a summary of what it assisted you with.  If generative AI was used, include which generative AI system was used and what prompt(s) you fed it.
-
-
-
