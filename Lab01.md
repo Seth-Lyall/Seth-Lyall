@@ -11,12 +11,12 @@
 
 | Windows | Linux / Mac | Action |
 | ---     | ---         | ---    |
-| help    | man         |Gives information about powershell, provides links to online help, and provides information about the help feature.|
+| help    | man         |Gives information about powershell, provides links to online help, and provides information about the help feature. Can also provide help information about a specified command.|
 | Get-Location | pwd    |Displays the current file path.|
 | Get-ChildItem | ls    |Shows all files and folders in the current directory.|
 | mkdir   | mkdir       |Creates a new directory with a specified name.|
 | Set-Location | cd     |Sets your directory to a specified file or folder in your current directory.|
-| New-Item | touch      |Creates a new file in the current directory.|
+| New-Item | touch      |Creates a new file in the current directory with a specified name.|
 | Move-Item | mv        |Moves a specified item from the current directory to a specified directory.|
 | Copy-Item | cp        |Copies a specified item from the current directory back into the current directory with a new name.|
 | Remove-Item | rm      |Removes a specified item from the current directory along with any items contained within.|
