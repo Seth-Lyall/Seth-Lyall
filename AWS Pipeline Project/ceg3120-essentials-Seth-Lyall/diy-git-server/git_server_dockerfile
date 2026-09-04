@@ -1,0 +1,25 @@
+# Base image
+FROM ubuntu:latest
+
+# Install required software
+RUN apt update
+RUN apt install -y git openssh-server
+
+# Create the git user
+RUN useradd -m -s /usr/bin/git-shell git
+
+# Set up directories, (.ssh, repos, git-shell-commands...)
+WORKDIR /home/git
+COPY .ssh/git_server.pub .ssh/authorized_keys
+RUN mkdir repos git-shell-commands
+
+# Create a repository called main
+WORKDIR /home/git/repos
+RUN git init --bare main.git
+RUN chown -R git /home/git
+
+# Start sshd
+WORKDIR /
+RUN mkdir /var/run/sshd
+RUN chmod 0755 /var/run/sshd
+CMD ["/usr/sbin/sshd", "-D"]
