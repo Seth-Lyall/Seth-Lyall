@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Can Cook - Sign Up</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="js/config.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar"></nav>
+
+    <!-- Sign Up -->
+    <div class="content">
+        <div class="login-container">
+            <h2>Sign Up</h2>
+            <form onsubmit="handleSignup(event)">
+                <label for="email">Email</label>
+                <input type="email" id="email" aria-label="Enter your email" required>
+                <br><br>
+                
+                  <label for="userUsername">Username <small>(up to 8 lowercase characters)</small></label>
+                <input type="text" id="userUsername" aria-label="Enter a username" 
+                      pattern="[a-z]{1,8}" 
+                       maxlength="8" 
+                      title="Username must be 1 to 8 lowercase letters"
+                       required>
+                <span id="usernameError" style="color: red; font-size: 12px; display: none;"></span>
+                <br><br>
+                
+                <label for="userPassword">Password <small>(12 chars: 1 uppercase, 1 lowercase, 1 number, 1 symbol)</small></label>
+                <input type="password" id="userPassword" aria-label="Enter a password" 
+                       minlength="12" 
+                       maxlength="12"
+                       title="Password must be exactly 12 characters with at least 1 uppercase, 1 lowercase, 1 number, and 1 symbol"
+                       required>
+                <span id="passwordError" style="color: red; font-size: 12px; display: none;"></span>
+                <br><br>
+                <button type="submit">Sign Up</button>
+            </form>
+            <a href="login.html"><button style="margin-top: 10px;">Back to Login</button></a>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 - Can Cook - By team C(ooked)++</p>
+    </footer>
+
+</body>
+</html>

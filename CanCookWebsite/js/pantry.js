@@ -1,0 +1,334 @@
+// Pantry Service
+class PantryService {
+    
+    // Get all pantry items
+    static async getPantryItems() {
+        try {
+            return await ApiService.get(API_CONFIG.ENDPOINTS.PANTRY_ITEMS);
+        } catch (error) {
+            console.error('Failed to fetch pantry items:', error);
+            return [];
+        }
+    }
+    
+    // Add item to pantry
+    static async addItem(itemData) {
+        try {
+            // Ensure userId is included in the request
+            const user = AuthService.getUser();
+            const requestData = {
+                ...itemData,
+                userId: itemData.userId || user?.id
+            };
+            return await ApiService.post(API_CONFIG.ENDPOINTS.ADD_PANTRY_ITEM, requestData);
+        } catch (error) {
+            console.error('Failed to add pantry item:', error);
+            throw error;
+        }
+    }
+    
+    // Add or update item in pantry (consolidates existing items)
+    static async addOrUpdateItem(itemData) {
+        try {
+            // Ensure we have userId from the current user or itemData
+            const user = AuthService.getUser();
+            const userId = itemData.userId || user?.id;
+            
+            // Get all current pantry items for the current user
+            const response = await PantryService.getPantryItems();
+            const pantryRows = response.rows || response.data || response || [];
+            let items = Array.isArray(pantryRows) ? pantryRows : [];
+            
+            // Filter to only include items belonging to the current user
+            items = items.filter(item => 
+                (item.userId || item.user_id) == userId
+            );
+            
+            // Check if an item with the same itemId already exists (for this user)
+            const existingItem = items.find(item => 
+                (item.itemId || item.item_id) === (itemData.itemId || itemData.item_id)
+            );
+            
+            if (existingItem) {
+                // Item already exists, update its quantity
+                const currentQuantity = Number(existingItem.quantity || 0);
+                const addedQuantity = Number(itemData.quantity || 0);
+                const newQuantity = currentQuantity + addedQuantity;
+                
+                console.log(`Item already in pantry. Updating quantity from ${currentQuantity} to ${newQuantity}`);
+                return await PantryService.updateItemQuantity(existingItem.id, newQuantity, userId);
+            } else {
+                // Item doesn't exist, add it as new entry
+                console.log('Item not in pantry. Adding as new item.');
+                return await PantryService.addItem({ ...itemData, userId });
+            }
+        } catch (error) {
+            console.error('Failed to add or update pantry item:', error);
+            throw error;
+        }
+    }
+    
+    // Remove item from pantry
+    static async removeItem(itemId) {
+        try {
+            return await ApiService.delete(API_CONFIG.ENDPOINTS.REMOVE_PANTRY_ITEM + itemId);
+        } catch (error) {
+            console.error('Failed to remove pantry item:', error);
+            throw error;
+        }
+    }
+    
+    // Update item quantity
+    static async updateItemQuantity(itemId, quantity, userId = null) {
+        try {
+            // Ensure userId is included in the request for proper filtering
+            const user = AuthService.getUser();
+            const requestData = {
+                quantity,
+                userId: userId || user?.id
+            };
+            return await ApiService.put(API_CONFIG.ENDPOINTS.REMOVE_PANTRY_ITEM + itemId, requestData);
+        } catch (error) {
+            console.error('Failed to update pantry item:', error);
+            throw error;
+        }
+    }
+}
+
+// Build a Map of itemId -> item details by fetching items from all stores
+async function buildItemLookup() {
+    const lookup = {};
+    try {
+        const storesResp = await ApiService.get(API_CONFIG.ENDPOINTS.STORES);
+        const storeList = storesResp.rows || storesResp.data || storesResp || [];
+        const stores = Array.isArray(storeList) ? storeList : [];
+
+        await Promise.all(stores.map(async store => {
+            try {
+                const itemsResp = await ApiService.get(`${API_CONFIG.ENDPOINTS.STORE_ITEMS}${store.id}/items`);
+                const raw = itemsResp.rows || itemsResp.data || itemsResp || [];
+                (Array.isArray(raw) ? raw : []).forEach(si => {
+                    if (!lookup[si.id]) {
+                        lookup[si.id] = {
+                            name: si.name || si.item_name || `Item #${si.id}`,
+                            category: si.category || 'Pantry Staples',
+                            unit: si.unit || 'units',
+                            image: si.image || si.image_url || si.imageUrl || null,
+                            storeName: store.name || `Store #${store.id}`
+                        };
+                    }
+                });
+            } catch (_) { /* skip unavailable store */ }
+        }));
+    } catch (e) {
+        console.warn('Could not build item lookup:', e);
+    }
+    return lookup;
+}
+
+function normalizeImageUrl(rawUrl) {
+    const value = String(rawUrl || '').trim().replace(/&amp;/g, '&');
+    if (!value) {
+        return '';
+    }
+
+    if (/^https?:\/\//i.test(value) || /^data:/i.test(value)) {
+        return value;
+    }
+
+    if (value.startsWith('//')) {
+        return `https:${value}`;
+    }
+
+    if (/^images\.weserv\.nl\//i.test(value)) {
+        return `https://${value}`;
+    }
+
+    if (/^[a-z0-9.-]+\.[a-z]{2,}\/+/i.test(value)) {
+        return `https://${value}`;
+    }
+
+    return value;
+}
+
+function extractOriginalFromProxy(imageUrl) {
+    const normalized = normalizeImageUrl(imageUrl);
+    if (!normalized) {
+        return '';
+    }
+
+    if (!/^https?:\/\/images\.weserv\.nl\//i.test(normalized)) {
+        return normalized;
+    }
+
+    try {
+        const proxyUrl = new URL(normalized);
+        const raw = proxyUrl.searchParams.get('url');
+        if (!raw) {
+            return normalized;
+        }
+        return normalizeImageUrl(raw);
+    } catch (error) {
+        return normalized;
+    }
+}
+
+function escapeHtmlAttr(value) {
+    return String(value || '').replace(/"/g, '&quot;');
+}
+
+function resolvePantryImageUrl(row, meta) {
+    const candidates = [
+        meta?.image,
+        row?.image_url,
+        row?.imageUrl,
+        row?.image
+    ];
+
+    for (const candidate of candidates) {
+        const value = normalizeImageUrl(candidate);
+        if (value) {
+            return value;
+        }
+    }
+
+    return 'apple.jpg';
+}
+
+// Load and display pantry items
+async function loadPantryItems() {
+    if (!AuthService.requireRole(['user'])) {
+        return;
+    }
+    
+    try {
+        // Fetch pantry rows and item metadata in parallel
+        const [response, itemLookup] = await Promise.all([
+            PantryService.getPantryItems(),
+            buildItemLookup()
+        ]);
+
+        const rawItems = response.rows || response.data || response || [];
+        let pantryRows = Array.isArray(rawItems) ? rawItems : [];
+        
+        // Filter to only show items belonging to the current user
+        const currentUser = AuthService.getUser();
+        if (currentUser && currentUser.id) {
+            pantryRows = pantryRows.filter(item => 
+                (item.userId || item.user_id) == currentUser.id
+            );
+        }
+
+        // Enrich each row with name/category/unit from the lookup
+        const items = pantryRows.map(row => {
+            const id = row.itemId || row.item_id;
+            const meta = itemLookup[id] || {};
+            return {
+                id: row.id,
+                itemId: id,
+                name: row.name || row.item_name || row.itemName || meta.name || `Item #${id}`,
+                category: row.category || row.item_category || meta.category || 'Pantry Staples',
+                unit: row.unit || meta.unit || 'units',
+                image_url: resolvePantryImageUrl(row, meta),
+                store_name: row.store_name || row.storeName || meta.storeName || 'Unknown Store',
+                quantity: row.quantity || 0
+            };
+        });
+        
+        // Define the 5 required categories
+        const categories = {
+            'Produce': [],
+            'Meats & Seafood': [],
+            'Dairy': [],
+            'Bakery': [],
+            'Pantry Staples': []
+        };
+        
+        // Group items by category
+        items.forEach(item => {
+            const category = item.category;
+            if (categories[category]) {
+                categories[category].push(item);
+            } else {
+                categories['Pantry Staples'].push(item);
+            }
+        });
+        
+        // Sort items alphabetically within each category
+        Object.keys(categories).forEach(category => {
+            categories[category].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        });
+        
+        // Populate each category table
+        populateCategoryTable('producTable', categories['Produce']);
+        populateCategoryTable('meatsTable', categories['Meats & Seafood']);
+        populateCategoryTable('dairyTable', categories['Dairy']);
+        populateCategoryTable('bakeryTable', categories['Bakery']);
+        populateCategoryTable('staplesTable', categories['Pantry Staples']);
+        
+    } catch (error) {
+        console.error('Failed to load pantry items:', error);
+    }
+}
+
+// Populate a category table with items
+function populateCategoryTable(tableId, items) {
+    const table = document.getElementById(tableId);
+    if (!table) return;
+    
+    if (items.length === 0) {
+        table.innerHTML = '<tr><td style="padding: 10px; color: #999;">No items in this category yet</td></tr>';
+        return;
+    }
+    
+    let tableHTML = `
+        <tr>
+            <th style="width: 60px;">Image</th>
+            <th>Item Name</th>
+            <th>Store</th>
+            <th>Quantity</th>
+            <th style="width: 100px;">Actions</th>
+        </tr>
+    `;
+    
+    items.forEach(item => {
+        const imageUrl = normalizeImageUrl(item.image_url || item.imageUrl || 'apple.jpg');
+        const originalImageUrl = extractOriginalFromProxy(imageUrl);
+        const storeName = item.store_name || item.storeName || 'Unknown Store';
+        const quantity = item.quantity || 0;
+        const unit = item.unit || 'units';
+        
+        tableHTML += `
+            <tr>
+                <td><img src="${imageUrl}" data-original="${escapeHtmlAttr(originalImageUrl)}" alt="${item.name}" onerror="if (this.dataset.original && this.src !== this.dataset.original) { this.src = this.dataset.original; } else { this.onerror = null; this.src = 'apple.jpg'; }" style="width: 50px; height: 50px; object-fit: cover; border-radius: 4px;"></td>
+                <td>${item.name || 'Unknown Item'}</td>
+                <td>${storeName}</td>
+                <td>${quantity} ${unit}</td>
+                <td>
+                    <button onclick="removePantryItem(${item.id})" style="background-color: #f44336; color: white; padding: 5px 10px; border: none; border-radius: 4px; cursor: pointer;">Remove</button>
+                </td>
+            </tr>
+        `;
+    });
+    
+    table.innerHTML = tableHTML;
+}
+
+// Remove pantry item
+async function removePantryItem(itemId) {
+    if (confirm('Are you sure you want to remove this item?')) {
+        try {
+            await PantryService.removeItem(itemId);
+            await loadPantryItems(); // Reload the pantry
+        } catch (error) {
+            alert('Failed to remove item: ' + error.message);
+        }
+    }
+}
+
+// Initialize pantry page
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('pantry.html')) {
+        loadPantryItems();
+    }
+});
