@@ -5,7 +5,7 @@
 This is a cloud formation template that creates a VPC with a public subnet and an EC2 instance running Ubuntu 24.04 LTS. Every necessary setup step is performed automatically with no input needed from the user. The instance can be ssh'd to from the following allowed IPs:
 - Locally: `127.0.0.1/32`
 - Wright State: `130.108.0.0/16`
-- My Home IP: `174.97.0.0/16`
+- My Home IP: `Censored`
 
 The instance accepts HTTP and Apache2 connections from the following:
 - HTTP: `0.0.0.0/0`
