@@ -1,9 +1,0 @@
-## Project 5
-
-### Repository Contents
-
-This repository consists of the files needed to create a continuous deployment pipeline that performs automated tasks to redeploy a live containerized website hosted in the cloud with automated load balancing. A GitHub workflow file called [update-container.yml](.github/workflows/update-container.yml) is in `.github/workflows/` that automatically tags and pushes a docker container when a new tag is added to the GitHub repository. In [deployment](deployment) are three files, [hooks.json](deployment/hooks.json), [redeploy.sh](deployment/redeploy.sh), and [webhook.service](deployment/webhook.service). [hooks.json](deployment/hooks.json) is the configuration file that determines what the webhook from GitHub does. [redeploy.sh](deployment/redeploy.sh) is the shell script that is ran by [hooks.json](deployment/hooks.json) to redeploy the containerized website in each of the host servers in the proxy. [webhook.service](deployment/webhook.service) is the service file that automatically starts and grants permissions to webhook so it always listens on port 9000 when the proxy server is active. Within [web-content](web-content) is a static html website that is served by the proxy and host servers. [Dockerfile](Dockerfile) is the build file for the `lyalls2004/the-website` repository that exists on Docker Hub.
-
-In [README-CI.md](README-CI.md) is a detailed overview of the continuous integration part of this project. It discusses how changes are pushed and managed with Docker Hub and GitHub using GitHub Actions and standard semantic versioning.
-
-In [README-CD.md](README-CD.md) is a detailed overview of the continuous development part of this project. It discusses how changes made to the website are sent to the Amazon Web Services instances, how their security is dealt with, what redeploys the containerized websites, and how the webhook payloads are handled.
