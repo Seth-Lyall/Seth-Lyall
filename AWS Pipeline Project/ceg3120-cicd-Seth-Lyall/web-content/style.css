@@ -1,0 +1,84 @@
+/* General Styles */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+
+    p {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        line-height: 1.6;
+    }
+
+    h1 {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        padding: 0;
+
+    }
+
+    .content {
+        max-width: 1500px;
+        margin: auto;
+        margin-bottom: 70px;
+        text-align: center;
+    }
+
+    .faded-image {
+        opacity: 0.025;
+        transition: opacity 0.25s ease-in-out;
+        border-radius: 20px
+    }
+
+    .faded-image:hover {
+        opacity: 1;
+    }
+}
+
+/* Navbar Styles */
+.navbar {
+    background-color: #333;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+
+    a {
+        color: white;
+        text-align: center;
+        align-items: center;
+        padding: 10px;
+        margin: 10px;
+        text-decoration: none;
+    }
+
+    a:hover {
+        color: rgb(183, 183, 183);
+    }
+
+    .logo {
+        font-size: 1.5rem;
+        font-weight: bold;
+        padding: 5px;
+        margin: 5px;
+        color: white;
+    }
+}
+
+/* Footer */
+footer {
+    position: fixed;
+    bottom: 0;
+    background: #333;
+    color: white;
+    text-align: center;
+    width: 100%;
+    z-index: 100;
+
+    p {
+        padding: 10px;
+    }
+}
